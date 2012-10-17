@@ -25,10 +25,11 @@ namespace Forex
             request.Timeout = 100 * 1000;
             request.Method = "GET";
             request.MaximumAutomaticRedirections = 1000;
-            request.ContentType = "text/html";
+            request.ContentType = "application/xml";
             request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,* / *;q=0.8";
             request.AllowAutoRedirect = true;
             request.KeepAlive = true;
+            request.Referer = @"http://www.dailyfx.com.hk/exchange/index.html";            
             request.ProtocolVersion = HttpVersion.Version10;
             request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:15.0) Gecko/20100101 Firefox/15.0.1";
             request.UseDefaultCredentials = true;

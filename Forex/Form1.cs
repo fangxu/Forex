@@ -9,12 +9,15 @@ using System.Windows.Forms;
 using Forex.Model;
 using System.Text.RegularExpressions;
 using System.Timers;
+using System.Xml;
 
 namespace Forex
 {
     public partial class Form1 : Form
     {
+        private const String SOURCE_URL = @"http://www.dailyfx.com.hk/xml/us_price.xml";
         private List<Pair> data = null;
+        private TechsForm techsForm = null;
         //private List<String> selected = null;  
         private System.Timers.Timer aTimer;
         public Dictionary<String, bool> selectedPair = null;
@@ -22,16 +25,21 @@ namespace Forex
         {
             selectedPair = new Dictionary<string, bool>();
             InitializeComponent();
+            techsForm = new TechsForm();
+            techsForm.Owner = this;
+            techsForm.Show();
+            techsForm.SetDesktopLocation(this.Location.X + this.Width, this.Location.Y);
             updateData();
             foreach (Pair p in data)
             {
                 selectedPair.Add(p.Symbol, false);
             }
-            selectedPair["GBPUSD"] = true;
-            aTimer = new System.Timers.Timer(2000);
+            //selectedPair["GBPUSD"] = true;
+            aTimer = new System.Timers.Timer();
             aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-            aTimer.Interval = 2000;
+            aTimer.Interval = 1000 * 30;
             aTimer.Enabled = true;
+            updateList();
         }
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
@@ -42,41 +50,41 @@ namespace Forex
         {
             data = new List<Pair>();
             Pair p = null;
-            String dataString = getData();
-            /*******************  symbol        name         current      up  */
-            String patten = @"\['([\s\S]*?)','([\s\S]*?)',([\s\S]*?),([\s\S]*?),";
-            /**********  down        opening       highest      lowest  */
-            patten += @"([\s\S]*?),([\s\S]*?),([\s\S]*?),([\s\S]*?),";
-            /**********  amplitude        buy       sell         time  */
-            patten += @"([\s\S]*?),'([\s\S]*?)','([\s\S]*?)','([\s\S]*?)']";
-            MatchCollection matches = Regex.Matches(dataString, patten);
-            foreach (Match m in matches)
+            String dataString = Utils.GetHtml(SOURCE_URL, Encoding.UTF8);
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(dataString);
+            XmlNode root = doc.SelectSingleNode("Rates");
+            XmlNodeList nodes = root.ChildNodes; //取得row下的子节点集合 
+            foreach (XmlNode node in nodes)
             {
                 p = new Pair();
-                p.Symbol = m.Groups[1].ToString();
-                p.Name = m.Groups[2].ToString();
-                p.Current = float.Parse(m.Groups[3].ToString());
-                p.Up = float.Parse(m.Groups[4].ToString());
-                p.Down = float.Parse(m.Groups[5].ToString());
-                p.Opening = float.Parse(m.Groups[6].ToString());
-                p.Highest = float.Parse(m.Groups[7].ToString());
-                p.Lowest = float.Parse(m.Groups[8].ToString());
-                p.Amplitude = float.Parse(m.Groups[9].ToString());
-                if (!m.Groups[10].ToString().Equals("--"))
+                p.Symbol = node.Attributes[0].InnerText;
+                foreach (XmlElement n in node.ChildNodes)
                 {
-                    p.Buy = float.Parse(m.Groups[10].ToString());
-                }
-                if (!m.Groups[11].ToString().Equals("--"))
-                {
-                    p.Sell = float.Parse(m.Groups[11].ToString());
-                }
-                if (!m.Groups[12].ToString().Equals("0"))
-                {
-                    p.Time = DateTime.Parse(m.Groups[12].ToString());
+                    switch (n.Name)
+                    {
+                        case "Bid":
+                            p.Bid = float.Parse(n.InnerText);
+                            break;
+                        case "Ask":
+                            p.Ask = float.Parse(n.InnerText);
+                            break;
+                        case "High":
+                            p.High = float.Parse(n.InnerText);
+                            break;
+                        case "Low":
+                            p.Low = float.Parse(n.InnerText);
+                            break;
+                        case "Direction":
+                            p.Direction = int.Parse(n.InnerText);
+                            break;
+                        case "Last":
+                            p.Last = DateTime.Parse(n.InnerText);
+                            break;
+                    }
                 }
                 data.Add(p);
             }
-            
         }
 
         private void updateList()
@@ -85,7 +93,7 @@ namespace Forex
             {
                 return;
             }
-            
+
             ListViewItem lv;
             if (this.InvokeRequired)
             {
@@ -103,20 +111,28 @@ namespace Forex
 
             foreach (Pair p in data)
             {
-                bool selected = true;
-                selectedPair.TryGetValue(p.Symbol, out selected);
-                if (!selected)
+                //                 bool selected = true;
+                //                 selectedPair.TryGetValue(p.Symbol, out selected);
+                //                 if (!selected)
+                //                 {
+                //                     continue;
+                //                 }
+                lv = new ListViewItem(new string[] { p.Symbol,
+                p.Bid.ToString(),p.Ask.ToString(),p.High.ToString(),
+                p.Low.ToString(),p.Last.ToLongTimeString()});
+                if (p.Direction == 1)
                 {
-                    continue;
+                    lv.BackColor = Color.IndianRed;
                 }
-                lv = new ListViewItem(new string[] { p.Name+"/"+p.Symbol,
-                p.Current.ToString(),p.Up.ToString(),p.Opening.ToString(),
-                p.Highest.ToString(),p.Lowest.ToString(),p.Amplitude.ToString(),
-                p.Buy+"/"+p.Sell,p.Time.ToLongTimeString()});
-                /*if (listView1.Items.Count % 2 == 0)
+                else if (p.Direction == -1)
                 {
-                    lv.BackColor = Color.FromArgb(0xccddff);
-                }*/
+                    lv.BackColor = Color.SpringGreen;
+                }
+
+                if ("GBPUSD".Equals(p.Symbol))
+                {
+                    lv.BackColor = Color.LightSteelBlue;
+                }
                 //lv.Font=
                 if (this.InvokeRequired)
                 {
@@ -145,12 +161,11 @@ namespace Forex
 
         }
 
-        private String getData()
-        {
-            String url = @"http://quote.forex.hexun.com/hqzx/restquote.aspx?type=3&time=" +
-                DateTime.Now.ToString("HHmmss");
-            return Utils.GetHtml(url);
-        }
+        //         private String getData()
+        //         {
+        //             String url = @"http://www.dailyfx.com.hk/xml/us_price.xml";
+        //             return Utils.GetHtml(url);
+        //         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
@@ -165,6 +180,14 @@ namespace Forex
             form2.ShowDialog();
             updateData();
             updateList();
+        }
+
+        private void Form1_Move(object sender, EventArgs e)
+        {
+            if (techsForm.Visible)
+            {
+                techsForm.SetDesktopLocation(this.Location.X + this.Width, this.Location.Y);
+            }
         }
     }
 }

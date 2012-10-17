@@ -51,6 +51,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\Pair.cs" />
+    <Compile Include="Model\TecItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SelectForm.cs">
@@ -58,6 +59,18 @@
     </Compile>
     <Compile Include="SelectForm.Designer.cs">
       <DependentUpon>SelectForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TechDetail.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TechDetail.Designer.cs">
+      <DependentUpon>TechDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TechsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TechsForm.Designer.cs">
+      <DependentUpon>TechsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\Utils.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -75,6 +88,12 @@
     <EmbeddedResource Include="SelectForm.resx">
       <DependentUpon>SelectForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="TechDetail.resx">
+      <DependentUpon>TechDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TechsForm.resx">
+      <DependentUpon>TechsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -84,6 +103,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="logo.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

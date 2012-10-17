@@ -5,9 +5,56 @@ using System.Text;
 
 namespace Forex.Model
 {
+    /*
+<Rate Symbol="EURUSD">
+    <Bid>1.31009</Bid>
+    <Ask>1.31037</Ask>
+    <High>1.31257</High>
+    <Low>1.30505</Low>
+    <Direction>-1</Direction>
+    <Last>21:13:41</Last>
+</Rate>
+     */
     class Pair
     {
         private String symbol;
+        private float bid;
+        private float ask;
+        private float high;
+        private float low;
+        private int direction;
+        private DateTime last;
+
+        public System.DateTime Last
+        {
+            get { return last; }
+            set { last = value; }
+        }
+        public int Direction
+        {
+            get { return direction; }
+            set { direction = value; }
+        }
+        public float Low
+        {
+            get { return low; }
+            set { low = value; }
+        }
+        public float High
+        {
+            get { return high; }
+            set { high = value; }
+        }
+        public float Ask
+        {
+            get { return ask; }
+            set { ask = value; }
+        }
+        public float Bid
+        {
+            get { return bid; }
+            set { bid = value; }
+        }
         private String name;
         private float current;
         private float up;
