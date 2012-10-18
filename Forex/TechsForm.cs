@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using Forex.Model;
+using System.Threading;
 
 namespace Forex
 {
@@ -19,7 +20,9 @@ namespace Forex
         {
             InitializeComponent();
             this.ControlBox = false;
-            updateListView();
+            Thread t = new Thread(updateListView);
+            t.IsBackground = true;
+            t.Start();
         }
 
         void updateListView()
@@ -45,7 +48,17 @@ namespace Forex
                 data.Add(item);
             }
             ListViewItem lv;
-            listView1.BeginUpdate();
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(() =>
+                {
+                    listView1.BeginUpdate();
+                }));
+            }
+            else
+            {
+                listView1.BeginUpdate();
+            }
             foreach (TecItem ti in data)
             {
                 lv = new ListViewItem(new string[] {ti.Name,ti.Time.ToShortTimeString(),
@@ -54,9 +67,30 @@ namespace Forex
                 {
                     lv.BackColor = Color.LightSkyBlue;
                 }
-                listView1.Items.Add(lv);
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new MethodInvoker(() =>
+                    {
+                        listView1.Items.Add(lv);
+                    }));
+                }
+                else
+                {
+                    listView1.Items.Add(lv);
+                }                
             }
-            listView1.EndUpdate();
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(() =>
+                {
+                    listView1.EndUpdate();
+                }));
+            }
+            else
+            {
+                listView1.EndUpdate();
+            }
+            
         }
 
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)

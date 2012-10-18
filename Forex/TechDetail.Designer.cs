@@ -48,7 +48,10 @@
             this.ClientSize = new System.Drawing.Size(553, 348);
             this.Controls.Add(this.webBrowser1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "TechDetail";
+            this.ShowInTaskbar = false;
             this.Text = "TechDetail";
             this.ResumeLayout(false);
 
